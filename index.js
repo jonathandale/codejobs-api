@@ -1,3 +1,5 @@
+require('dotenv').load();
+
 var express = require('express'),
     request = require('request'),
     parser = require('xml2json'),
@@ -6,7 +8,7 @@ var express = require('express'),
 
 //Configure middleware
 app.use(function (req, res, next) {
-  if(app.get('env') === 'development') {
+  if(process.env.dev === 'true') {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   }
