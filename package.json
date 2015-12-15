@@ -1,0 +1,16 @@
+{
+  "name": "jobserve-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jon Dale",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.3",
+    "request": "^2.67.0",
+    "xml2json": "^0.9.0"
+  }
+}
