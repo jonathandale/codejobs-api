@@ -20,18 +20,22 @@ app.use(function (req, res, next) {
 
 //Search routes
 app.get('/search/github', function(req, res) {
-  var shaped = [];
+  var shaped = [],
+      now = moment();
   request({url: 'https://jobs.github.com/positions.json',
            json: true,
            qs: req.query}, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       if(body.length) {
         body.forEach(function(item, idx){
-          var date = moment(Date.parse(item['created_at']));
+          var created = moment(Date.parse(item['created_at'])),
+              date = created.isAfter(now) ? now : created;
           shaped.push({
             title: item.title,
             url: item.url,
-            date: date.format(),
+            relative_date: date.fromNow(),
+            date: date.format('Do MMMM, YYYY'),
+            timestamp: date.unix(),
             location: item.location,
             description: item.description,
             company: item.company,
@@ -49,33 +53,40 @@ app.get('/search/github', function(req, res) {
 //SO Helpers
 
 function cleanJobTitle(company, location, title){
-  return title.replace(/&#40;/g, '(')
-              .replace(/&#41;/g, ')')
-              .replace('at ' + company, '')
-              .replace('(' + location + ')', '')
-              .replace('(allows remote)', '').trim();
+  return entities.decode(title.replace(/&#40;/g, '(')
+                              .replace(/&#41;/g, ')')
+                              .replace('at ' + company, '')
+                              .replace('(' + location + ')', '')
+                              .replace('(allows remote)', '').trim());
 }
 
 app.get('/search/stackoverflow', function(req, res){
   var shaped = [],
-      xml;
+      items = [],
+      parsed, xml;
   request({url: 'http://careers.stackoverflow.com/jobs/feed',
            json: true,
            qs: req.query}, function(error, response, body){
     if (!error && response.statusCode == 200) {
-      xml = parser.toJson(body, {object: true});
-      if(xml.rss.channel.item) {
-        xml.rss.channel.item.forEach(function(item, idx){
+      parsed = parser.toJson(body, {object: true});
+      xml = parsed.rss.channel.item;
+
+      if(xml) items = (Array.isArray(xml)) ? xml : [xml];
+
+      if(items.length) {
+        items.forEach(function(item, idx){
           var date = moment(item['a10:updated'])
               company = item['a10:author']['a10:name'],
               location = (item.location) ? item.location['$t'] : null;
           shaped.push({
             title: cleanJobTitle(company, location, item.title),
             url: item.link,
-            date: date.format(),
+            relative_date: date.fromNow(),
+            date: date.format('Do MMMM, YYYY'),
+            timestamp: date.unix(),
             location: location,
             description: entities.decode(item.description),
-            company: company,
+            company: entities.decode(company),
             provider: 'stackoverflow',
           });
         });
