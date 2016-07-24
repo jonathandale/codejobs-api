@@ -10,6 +10,7 @@ var express = require('express'),
     server;
 
 //Configure middleware
+app.use(express.static('public'));
 app.use(function (req, res, next) {
   if(process.env.dev === 'true') {
     res.header("Access-Control-Allow-Origin", "*");
