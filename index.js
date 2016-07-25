@@ -66,13 +66,14 @@ app.get('/search/stackoverflow', function(req, res){
            json: true,
            qs: req.query}, function(error, response, body){
     if (!error && response.statusCode == 200) {
-      parseString(body, {explicitArray: false}, function(err, result){
+      parseString(body, {explicitArray: false, ignoreAttrs: true}, function(err, result){
         items = result.rss.channel.item;
         if(items.length) {
           items.forEach(function(item, idx){
-            var date = moment(item['a10:updated'])
+            var date = moment(item['a10:updated']),
                 company = item['a10:author']['a10:name'],
-                location = (item.location) ? item.location['$t'] : null;
+                location = (item.location) ? item.location : null;
+
             shaped.push({
               title: cleanJobTitle(company, location, item.title),
               url: item.link,
