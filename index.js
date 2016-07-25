@@ -12,10 +12,9 @@ var express = require('express'),
 //Configure middleware
 app.use(express.static('public'));
 app.use(function (req, res, next) {
-  if(process.env.dev === 'true') {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  }
+  var origin = (process.env.dev === 'true') ? "*" : "codejobs.surge.sh";
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
