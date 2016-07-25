@@ -2,7 +2,7 @@ require('dotenv').load();
 
 var express = require('express'),
     request = require('request'),
-    parser = require('xml2json'),
+    parseString = require('xml2js').parseString,
     moment = require('moment'),
     Entities = require('html-entities').AllHtmlEntities,
     entities = new Entities(),
@@ -69,30 +69,28 @@ app.get('/search/stackoverflow', function(req, res){
            json: true,
            qs: req.query}, function(error, response, body){
     if (!error && response.statusCode == 200) {
-      parsed = parser.toJson(body, {object: true});
-      xml = parsed.rss.channel.item;
-
-      if(xml) items = (Array.isArray(xml)) ? xml : [xml];
-
-      if(items.length) {
-        items.forEach(function(item, idx){
-          var date = moment(item['a10:updated'])
-              company = item['a10:author']['a10:name'],
-              location = (item.location) ? item.location['$t'] : null;
-          shaped.push({
-            title: cleanJobTitle(company, location, item.title),
-            url: item.link,
-            relative_date: date.fromNow(),
-            date: date.format('Do MMMM, YYYY'),
-            timestamp: date.unix(),
-            location: location,
-            description: entities.decode(item.description),
-            company: entities.decode(company),
-            provider: 'stackoverflow',
+      parseString(body, {explicitArray: false}, function(err, result){
+        items = result.rss.channel.item;
+        if(items.length) {
+          items.forEach(function(item, idx){
+            var date = moment(item['a10:updated'])
+                company = item['a10:author']['a10:name'],
+                location = (item.location) ? item.location['$t'] : null;
+            shaped.push({
+              title: cleanJobTitle(company, location, item.title),
+              url: item.link,
+              relative_date: date.fromNow(),
+              date: date.format('Do MMMM, YYYY'),
+              timestamp: date.unix(),
+              location: location,
+              description: entities.decode(item.description),
+              company: entities.decode(company),
+              provider: 'stackoverflow',
+            });
           });
-        });
-      }
-      res.send(shaped);
+        }
+        res.send(shaped);
+      });
     }
   })
 });
