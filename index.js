@@ -8,7 +8,7 @@ var express = require('express'),
     server;
 
 //Configure middleware
-// app.use(express.static('public'));
+app.use(express.static('public'));
 app.use(function (req, res, next) {
   var origin = (process.env.dev && process.env.dev === 'true') ? "*" : "http://codejobs.surge.sh";
   res.header("Access-Control-Allow-Origin", origin);
@@ -62,7 +62,7 @@ app.get('/search/stackoverflow', function(req, res){
   var shaped = [],
       items = [],
       parsed, xml;
-  request({url: 'http://careers.stackoverflow.com/jobs/feed',
+  request({url: 'http://stackoverflow.com/jobs/feed',
            json: true,
            qs: req.query}, function(error, response, body){
     if (!error && response.statusCode == 200) {
